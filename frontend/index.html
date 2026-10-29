@@ -1,0 +1,715 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SneakerClean - Gestão de Limpeza de Tênis</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👟</text></svg>">
+</head>
+<body>
+
+    <!-- ========================================================
+         HEADER PRINCIPAL & BARRA DE NAVEGAÇÃO
+         ======================================================== -->
+    <header class="app-header">
+        <div class="header-top">
+            <div class="brand-container">
+                <div class="brand-icon">👟</div>
+                <div>
+                    <h1 class="brand-title">SneakerClean</h1>
+                    <span class="brand-subtitle">Sistema de Gestão & Linha de Produção</span>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <div class="date-badge" id="current-date-badge">
+                    <span>📅</span> <span id="current-date-text">--/--/----</span>
+                </div>
+                <button class="btn-primary-action" onclick="Orders.openNewOrderModal()">
+                    <span>➕</span> Novo Pedido
+                </button>
+            </div>
+        </div>
+
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-target="view-dashboard">
+                <span>📊</span> Dashboard Financeiro
+            </button>
+            <button class="nav-tab" data-target="view-orders">
+                <span>👟</span> Linha de Produção & Pedidos
+            </button>
+            <button class="nav-tab" data-target="view-clients">
+                <span>👥</span> Clientes
+            </button>
+            <button class="nav-tab" data-target="view-calendar">
+                <span>📅</span> Calendário & Histórico
+            </button>
+        </nav>
+    </header>
+
+    <!-- ========================================================
+         CONTEÚDO PRINCIPAL (TELAS / VIEWS)
+         ======================================================== -->
+    <main class="main-content">
+
+        <!-- ====================================================
+             VIEW 1: DASHBOARD FINANCEIRO
+             ==================================================== -->
+        <section id="view-dashboard" class="page-view active">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">Dashboard Financeiro</h2>
+                    <p class="page-desc">Métricas de faturamento, orçamentos e visão consolidada da operação.</p>
+                </div>
+                <button class="btn-secondary" onclick="Dashboard.loadMetrics()">
+                    🔄 Atualizar Métricas
+                </button>
+            </div>
+
+            <!-- Grid de Indicadores Principais (KPIs) -->
+            <div class="kpi-grid">
+                <!-- Faturamento do Dia -->
+                <div class="kpi-card highlight">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Faturamento do Dia</span>
+                        <div class="kpi-icon">💰</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-rev-day">R$ 0,00</div>
+                    <div class="kpi-meta" id="kpi-orders-day">0 pedidos pagos hoje</div>
+                </div>
+
+                <!-- Faturamento da Semana -->
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Faturamento da Semana</span>
+                        <div class="kpi-icon">📈</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-rev-week">R$ 0,00</div>
+                    <div class="kpi-meta" id="kpi-orders-week">Últimos 7 dias</div>
+                </div>
+
+                <!-- Faturamento do Mês -->
+                <div class="kpi-card">
+                    <div class="kpi-header">
+                        <span class="kpi-title">Faturamento do Mês</span>
+                        <div class="kpi-icon">🗓️</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-rev-month">R$ 0,00</div>
+                    <div class="kpi-meta" id="kpi-orders-month">Mês atual</div>
+                </div>
+
+                <!-- Total a Receber (Pendente) -->
+                <div class="kpi-card pending">
+                    <div class="kpi-header">
+                        <span class="kpi-title">A Receber (Pendente)</span>
+                        <div class="kpi-icon">⏳</div>
+                    </div>
+                    <div class="kpi-value" id="kpi-pending-total">R$ 0,00</div>
+                    <div class="kpi-meta" id="kpi-pending-count">0 pedidos aguardando</div>
+                </div>
+            </div>
+
+            <!-- Gráfico de Faturamento e Status da Linha -->
+            <div class="dashboard-grid">
+                <!-- Gráfico de Barras dos Últimos 7 dias -->
+                <div class="content-card">
+                    <div class="card-title-bar">
+                        <h3 class="card-heading">📊 Tendência de Faturamento (Últimos 7 Dias)</h3>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Valores pagos</span>
+                    </div>
+                    <div class="chart-container">
+                        <div class="bar-chart-flex" id="dashboard-bar-chart">
+                            <!-- Inserido dinamicamente via dashboard.js -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Distribuição do Pipeline de Produção -->
+                <div class="content-card">
+                    <div class="card-title-bar">
+                        <h3 class="card-heading">⚙️ Linha de Produção</h3>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">Status atual</span>
+                    </div>
+                    <div class="pipeline-bars" id="pipeline-progress-container">
+                        <!-- Inserido dinamicamente via dashboard.js -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatísticas dos Tênis & Pedidos Recentes -->
+            <div class="dashboard-grid">
+                <!-- Distribuição por Cor & Marcas -->
+                <div class="content-card">
+                    <div class="card-title-bar">
+                        <h3 class="card-heading">👟 Estatísticas de Tênis</h3>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div>
+                            <h4 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; text-transform: uppercase;">Cores dos Pares</h4>
+                            <div id="color-distribution-container"></div>
+                        </div>
+                        <div>
+                            <h4 style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 0.5rem; text-transform: uppercase;">Top Marcas Lavadas</h4>
+                            <div id="top-brands-container"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Últimos Pedidos -->
+                <div class="content-card">
+                    <div class="card-title-bar">
+                        <h3 class="card-heading">🕒 Pedidos Recentes</h3>
+                        <a href="#orders" onclick="document.querySelector('[data-target=\'view-orders\']').click()" style="font-size: 0.8rem; color: var(--blue-marine); font-weight: 700; text-decoration: none;">Ver todos ➔</a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Cliente</th>
+                                    <th>Pares</th>
+                                    <th>Valor</th>
+                                    <th>Pagto</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-orders-tbody">
+                                <!-- Preenchido dinamicamente -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ====================================================
+             VIEW 2: LINHA DE PRODUÇÃO & PEDIDOS
+             ==================================================== -->
+        <section id="view-orders" class="page-view">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">Linha de Produção & Pedidos</h2>
+                    <p class="page-desc">Acompanhamento do ciclo de vida: Aguardando ➔ Pago ➔ Lavando ➔ Secando ➔ Pronto ➔ Entregue.</p>
+                </div>
+                <div class="toolbar-actions">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="order-search-input" class="search-input" placeholder="Buscar pedido, cliente ou fone...">
+                    </div>
+
+                    <select id="order-status-filter" class="filter-select">
+                        <option value="">Todos os Status</option>
+                        <option value="Aguardando pagamento">Aguardando pagamento</option>
+                        <option value="Pagamento realizado">Pagamento realizado</option>
+                        <option value="Lavando">Lavando</option>
+                        <option value="Secando">Secando</option>
+                        <option value="Pronto para entrega">Pronto para entrega</option>
+                        <option value="Entregue">Entregue</option>
+                    </select>
+
+                    <select id="order-payment-filter" class="filter-select">
+                        <option value="">Todo Pagamento</option>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Pago">Pago</option>
+                    </select>
+
+                    <div class="view-toggle-group">
+                        <button id="view-kanban-btn" class="view-toggle-btn active">
+                            <span>📋</span> Kanban
+                        </button>
+                        <button id="view-table-btn" class="view-toggle-btn">
+                            <span>📑</span> Tabela
+                        </button>
+                    </div>
+
+                    <button class="btn-primary" onclick="Orders.openNewOrderModal()">
+                        ➕ Novo Pedido
+                    </button>
+                </div>
+            </div>
+
+            <!-- Visualização 1: Kanban Board com as 6 Colunas da Linha de Produção -->
+            <div id="kanban-board-view" class="kanban-board">
+                <!-- Colunas geradas pelo orders.js -->
+            </div>
+
+            <!-- Visualização 2: Tabela de Pedidos -->
+            <div id="table-orders-view" class="table-responsive" style="display: none;">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Pares & Tênis</th>
+                            <th>Valor Total</th>
+                            <th>Pagamento</th>
+                            <th>Status Linha</th>
+                            <th>Data Entrada</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orders-table-tbody">
+                        <!-- Preenchido dinamicamente -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ====================================================
+             VIEW 3: CLIENTES
+             ==================================================== -->
+        <section id="view-clients" class="page-view">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">Gestão de Clientes</h2>
+                    <p class="page-desc">Cadastro, histórico de pedidos e contato via WhatsApp com os clientes.</p>
+                </div>
+                <div class="toolbar-actions">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="client-search-input" class="search-input" placeholder="Buscar por nome ou WhatsApp...">
+                    </div>
+                    <button class="btn-primary" onclick="Clients.openNewModal()">
+                        ➕ Novo Cliente
+                    </button>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome do Cliente</th>
+                            <th>WhatsApp</th>
+                            <th>Total Pedidos</th>
+                            <th>Faturamento Gerado</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clients-table-tbody">
+                        <!-- Inserido dinamicamente via clients.js -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ====================================================
+             VIEW 4: CALENDÁRIO & HISTÓRICO
+             ==================================================== -->
+        <section id="view-calendar" class="page-view">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">Calendário & Histórico de Produção</h2>
+                    <p class="page-desc">Visualização diária de serviços iniciados, finalizados e entregues, com histórico de auditoria.</p>
+                </div>
+            </div>
+
+            <div class="calendar-layout">
+                <!-- Grade Mensal do Calendário -->
+                <div class="calendar-card">
+                    <div class="calendar-header-nav">
+                        <div class="calendar-month-title" id="calendar-month-year-title">Mês Ano</div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn-cal-nav" id="cal-prev-month">◀ Mês Anterior</button>
+                            <button class="btn-cal-nav" id="cal-today-btn">Hoje</button>
+                            <button class="btn-cal-nav" id="cal-next-month">Próximo Mês ▶</button>
+                        </div>
+                    </div>
+
+                    <div class="calendar-grid" id="calendar-days-grid">
+                        <!-- Inserido dinamicamente via calendar.js -->
+                    </div>
+                </div>
+
+                <!-- Painel Lateral: Movimentações do Dia Selecionado -->
+                <div class="day-details-panel">
+                    <div class="day-details-header">
+                        <h3 style="font-size: 1.1rem; color: var(--blue-dark);" id="selected-day-title">Serviços do Dia</h3>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.2rem;">Clique em qualquer dia do calendário para ver suas atividades.</p>
+                    </div>
+                    <div class="day-details-list" id="day-orders-list">
+                        <!-- Inserido dinamicamente via calendar.js -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ========================================================
+         MODAIS DO SISTEMA
+         ======================================================== -->
+
+    <!-- 1. Modal: Novo Pedido (Linha de Produção & Promoção) -->
+    <div class="modal-overlay" id="order-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-header">
+                <div class="modal-title"><span>👟</span> Novo Pedido de Limpeza</div>
+                <button class="modal-close-btn" onclick="Orders.closeOrderModal()">✕</button>
+            </div>
+            <form id="order-modal-form" novalidate onsubmit="event.preventDefault(); Orders.saveOrder(); return false;">
+                <div class="modal-body">
+                    <!-- Opções de Seleção / Cadastro de Cliente -->
+                    <div class="form-group" style="background: #F0F7FF; padding: 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                            <label class="form-label" style="margin-bottom: 0;">Identificação do Cliente *</label>
+                            <div style="display: flex; gap: 0.4rem;">
+                                <button type="button" id="tab-client-existing" class="view-toggle-btn active" style="font-size: 0.78rem; padding: 0.3rem 0.6rem; border-radius: 4px;" onclick="Orders.toggleClientMode('existing')">
+                                    👤 Cliente Cadastrado
+                                </button>
+                                <button type="button" id="tab-client-new" class="view-toggle-btn" style="font-size: 0.78rem; padding: 0.3rem 0.6rem; border-radius: 4px;" onclick="Orders.toggleClientMode('new')">
+                                    ➕ Novo Cliente
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Opção A: Selecionar Cliente Existente -->
+                        <div id="client-select-existing-group">
+                            <select id="order-client-select" class="form-select">
+                                <!-- Opções preenchidas dinamicamente -->
+                            </select>
+                        </div>
+
+                        <!-- Opção B: Cadastrar Novo Cliente Diretamente no Pedido -->
+                        <div id="client-new-quick-group" style="display: none;">
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                                <div>
+                                    <label style="font-size: 0.78rem; font-weight: 700; color: var(--blue-dark);">Nome Completo *</label>
+                                    <input type="text" id="order-new-client-name" class="form-input" placeholder="Ex: Roberto Carlos">
+                                </div>
+                                <div>
+                                    <label style="font-size: 0.78rem; font-weight: 700; color: var(--blue-dark);">WhatsApp com DDD *</label>
+                                    <input type="text" id="order-new-client-phone" class="form-input" placeholder="(67) 99999-8888">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabela e Banner Promocional de Precificação -->
+                    <div class="pricing-promo-banner" id="pricing-promo-summary">
+                        <!-- Atualizado dinamicamente pelo orders.js -->
+                    </div>
+
+                    <!-- Pares de Tênis Dinâmicos -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.6rem;">
+                        <label class="form-label" style="margin-bottom: 0;">Pares de Tênis a Lavar *</label>
+                        <button type="button" class="btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="Orders.addSneakerItemRow()">
+                            ➕ Adicionar Outro Par
+                        </button>
+                    </div>
+
+                    <div id="sneaker-items-container">
+                        <!-- Linhas de tênis dinâmicas inseridas pelo orders.js -->
+                    </div>
+
+                    <!-- Pagamento e Notas -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Forma de Pagamento</label>
+                            <select id="order-payment-method" class="form-select">
+                                <option value="PIX">PIX (Chave 67998570731)</option>
+                                <option value="Dinheiro físico">Dinheiro físico</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Status do Pagamento</label>
+                            <select id="order-payment-status" class="form-select">
+                                <option value="Pendente">Pendente (pagar depois)</option>
+                                <option value="Pago">Pago (pagamento já efetuado)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Observações do Pedido (opcional)</label>
+                        <input type="text" id="order-notes-input" class="form-input" placeholder="Ex: Cliente tem pressa, cuidado especial com cadarço">
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="Orders.closeOrderModal()">Cancelar</button>
+                    <button type="button" id="btn-submit-order" class="btn-primary" onclick="Orders.saveOrder()">Criar Pedido</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Modal: Fotos Antes & Depois -->
+    <div class="modal-overlay" id="photo-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-header">
+                <div class="modal-title" id="photo-modal-title"><span>📷</span> Fotos Antes / Depois</div>
+                <button class="modal-close-btn" onclick="Orders.closePhotoModal()">✕</button>
+            </div>
+            <div class="modal-body" id="photos-items-container">
+                <!-- Preenchido dinamicamente com pares e fotos -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="Orders.closePhotoModal()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Modal: Notificação WhatsApp -->
+    <div class="modal-overlay" id="whatsapp-modal">
+        <div class="modal-dialog">
+            <div class="modal-header" style="background: #075E54;">
+                <div class="modal-title"><span>💬</span> Notificação WhatsApp</div>
+                <button class="modal-close-btn" onclick="Orders.closeWhatsAppModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+                    Destinatário: <strong id="whatsapp-client-info" style="color: var(--blue-dark);">-</strong>
+                </p>
+
+                <!-- Pré-visualização do chat estilo WhatsApp -->
+                <div class="whatsapp-chat-box">
+                    <div class="whatsapp-bubble" id="whatsapp-message-preview">
+                        <!-- Mensagem exata inserida dinamicamente -->
+                    </div>
+                    <div class="pix-key-pill">
+                        <span>Chave PIX: <strong id="whatsapp-pix-key-val">67998570731</strong> (João Ricardo Albuquerque Novaes)</span>
+                        <button type="button" class="btn-secondary" style="padding: 0.25rem 0.6rem; font-size: 0.75rem;" onclick="Orders.copyPixKey()">Copiar Chave</button>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+                    <button type="button" class="btn-secondary" onclick="Orders.copyWhatsAppMessage()">📋 Copiar Mensagem</button>
+                    <button type="button" class="btn-primary" id="btn-send-whatsapp-now" style="background: #25D366; display: flex; align-items: center; gap: 0.4rem;">
+                        <span>🚀</span> Abrir WhatsApp
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="Orders.closeWhatsAppModal()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Modal: Auditoria & Edição de Histórico -->
+    <div class="modal-overlay" id="audit-modal">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-header">
+                <div class="modal-title" id="audit-modal-title"><span>⚙️</span> Auditoria & Correção de Pedido</div>
+                <button class="modal-close-btn" onclick="Orders.closeAuditModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="audit-order-id">
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Status da Linha de Produção</label>
+                        <select id="audit-status-select" class="form-select">
+                            <option value="Aguardando pagamento">Aguardando pagamento</option>
+                            <option value="Pagamento realizado">Pagamento realizado</option>
+                            <option value="Lavando">Lavando</option>
+                            <option value="Secando">Secando</option>
+                            <option value="Pronto para entrega">Pronto para entrega</option>
+                            <option value="Entregue">Entregue</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Status do Pagamento</label>
+                        <select id="audit-payment-status" class="form-select">
+                            <option value="Pendente">Pendente</option>
+                            <option value="Pago">Pago</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Data de Entrada</label>
+                        <input type="datetime-local" id="audit-created-at" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data Pronto</label>
+                        <input type="datetime-local" id="audit-completion-date" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Data de Entrega</label>
+                        <input type="datetime-local" id="audit-delivered-date" class="form-input">
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">Forma de Pagamento</label>
+                        <select id="audit-payment-method" class="form-select">
+                            <option value="PIX">PIX</option>
+                            <option value="Dinheiro físico">Dinheiro físico</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Motivo da Modificação (Auditoria) *</label>
+                        <input type="text" id="audit-reason" class="form-input" placeholder="Ex: Correção de data informada incorretamente">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Observações</label>
+                    <textarea id="audit-notes" class="form-textarea" rows="2"></textarea>
+                </div>
+
+                <h4 style="color: var(--blue-dark); margin: 1.25rem 0 0.5rem 0; font-size: 0.95rem; border-top: 1px solid var(--border-subtle); padding-top: 0.75rem;">
+                    📜 Linha do Tempo de Auditoria
+                </h4>
+                <div id="audit-history-timeline" style="max-height: 180px; overflow-y: auto;">
+                    <!-- Preenchido dinamicamente -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="Orders.closeAuditModal()">Cancelar</button>
+                <button type="button" class="btn-primary" onclick="Orders.saveAuditForm()">Salvar Alterações</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. Modal: Exigência de Pagamento para Entrega -->
+    <div class="modal-overlay" id="delivery-payment-required-modal">
+        <div class="modal-dialog">
+            <div class="modal-header" style="background: #D97706;">
+                <div class="modal-title"><span>⚠️</span> Confirmação de Pagamento para Entrega</div>
+                <button class="modal-close-btn" onclick="Orders.closeDeliveryPaymentModal()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 1rem;">
+                    <span style="font-size: 2.5rem;">🛑</span>
+                    <h3 style="color: var(--blue-dark); margin-top: 0.5rem;">Pagamento Pendente!</h3>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem; font-size: 0.92rem;">
+                        Regra do Sistema: <strong>A entrega do tênis está estritamente condicionada ao status "Pago".</strong>
+                    </p>
+                    <p style="color: var(--blue-marine); font-size: 1.1rem; font-weight: 800; margin-top: 0.5rem;">
+                        Valor Total: <span id="delivery-pending-amount-txt">R$ 0,00</span>
+                    </p>
+                </div>
+                <p style="font-size: 0.88rem; text-align: center; color: var(--text-muted); margin-bottom: 1.25rem;">
+                    O cliente acabou de efetuar o pagamento? Selecione como o valor foi recebido para liberar a entrega imediatamente:
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                    <button type="button" class="btn-primary" style="background: #059669;" onclick="Orders.confirmDeliveryWithPayment('PIX')">
+                        ✅ Recebido via PIX ➔ Confirmar & Entregar
+                    </button>
+                    <button type="button" class="btn-primary" style="background: var(--blue-marine);" onclick="Orders.confirmDeliveryWithPayment('Dinheiro físico')">
+                        💵 Recebido em Dinheiro Físico ➔ Confirmar & Entregar
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="Orders.closeDeliveryPaymentModal()">Cancelar / Manter Pendente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 6. Modal: Cadastro / Edição de Cliente -->
+    <div class="modal-overlay" id="client-modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="modal-title" id="client-modal-title"><span>👥</span> Cliente</div>
+                <button class="modal-close-btn" onclick="Clients.closeModal()">✕</button>
+            </div>
+            <form id="client-modal-form">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label class="form-label">Nome Completo *</label>
+                        <input type="text" id="client-name-input" class="form-input" placeholder="Ex: João Ricardo" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Número de Telefone (WhatsApp) *</label>
+                        <input type="text" id="client-phone-input" class="form-input" placeholder="(67) 99857-0731" required>
+                        <small style="color: var(--text-muted); font-size: 0.76rem;">Obrigatório conter DDD e número com WhatsApp.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="Clients.closeModal()">Cancelar</button>
+                    <button type="submit" class="btn-primary">Salvar Cliente</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 7. Modal: Detalhes do Perfil do Cliente -->
+    <div class="modal-overlay" id="client-details-modal">
+        <div class="modal-dialog">
+            <div class="modal-header">
+                <div class="modal-title" id="client-details-title"><span>👤</span> Histórico do Cliente</div>
+                <button class="modal-close-btn" onclick="Clients.closeDetailsModal()">✕</button>
+            </div>
+            <div class="modal-body" id="client-details-body">
+                <!-- Conteúdo gerado dinamicamente -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="Clients.closeDetailsModal()">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========================================================
+         SCRIPTS
+         ======================================================== -->
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/clients.js"></script>
+    <script src="js/orders.js"></script>
+    <script src="js/calendar.js"></script>
+
+    <script>
+        // Inicialização Global
+        document.addEventListener('DOMContentLoaded', async () => {
+            // Data atual no topo
+            const now = new Date();
+            const dateOptions = { weekday: 'long', day: '2-digit', month: 'long', year: 'numeric' };
+            const dateStr = now.toLocaleDateString('pt-BR', dateOptions);
+            const dateTextEl = document.getElementById('current-date-text');
+            if (dateTextEl) {
+                dateTextEl.textContent = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+            }
+
+            // Gerenciamento de Abas de Navegação (Tabs)
+            const tabs = document.querySelectorAll('.nav-tab');
+            const views = document.querySelectorAll('.page-view');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', async () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    views.forEach(v => v.classList.remove('active'));
+
+                    tab.classList.add('active');
+                    const targetViewId = tab.getAttribute('data-target');
+                    const targetView = document.getElementById(targetViewId);
+                    if (targetView) targetView.classList.add('active');
+
+                    // Carregar dados conforme a tela aberta
+                    if (targetViewId === 'view-dashboard') {
+                        if (window.Dashboard) await Dashboard.loadMetrics();
+                    } else if (targetViewId === 'view-orders') {
+                        if (window.Orders) await Orders.loadOrders();
+                    } else if (targetViewId === 'view-clients') {
+                        if (window.Clients) await Clients.loadClients();
+                    } else if (targetViewId === 'view-calendar') {
+                        if (window.Calendar) await Calendar.loadEvents();
+                    }
+                });
+            });
+
+            // Inicializar cada módulo de forma independente
+            if (window.Clients) {
+                try { await Clients.init(); } catch (e) { console.warn("Clients init:", e); }
+            }
+            if (window.Orders) {
+                try { await Orders.init(); } catch (e) { console.warn("Orders init:", e); }
+            }
+            if (window.Dashboard) {
+                try { await Dashboard.init(); } catch (e) { console.warn("Dashboard init:", e); }
+            }
+            if (window.Calendar) {
+                try { await Calendar.init(); } catch (e) { console.warn("Calendar init:", e); }
+            }
+        });
+    </script>
+</body>
+</html>

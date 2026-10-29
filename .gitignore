@@ -1,0 +1,51 @@
+# ============================================================
+#  SneakerClean - .gitignore
+#  Arquivos e pastas que NUNCA devem ser enviados ao GitHub
+# ============================================================
+
+# --- Variáveis de Ambiente (DADOS SENSÍVEIS) ---
+.env
+
+# --- Banco de Dados SQLite (dados reais de clientes) ---
+*.db
+*.sqlite
+*.sqlite3
+
+# --- Fotos/Uploads dos Clientes (dados pessoais) ---
+backend/uploads/
+
+# --- Cache do Python ---
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+
+# --- Ambientes Virtuais Python ---
+venv/
+.venv/
+env/
+.env_folder/
+ENV/
+
+# --- IDEs e Editores ---
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# --- Sistema Operacional ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Logs ---
+*.log
+logs/
+
+# --- Distribuição / Build Python ---
+dist/
+build/
+*.egg-info/
